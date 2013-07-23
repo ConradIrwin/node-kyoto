@@ -11,6 +11,7 @@
 
 #include <v8.h>
 #include <node.h>
+#include <uv.h>
 #include <kcpolydb.h>
 
 using namespace std;
@@ -62,28 +63,29 @@ using namespace kyotocabinet;
       return THROW_BAD_ARGS;						\
     }									\
 									\
-    Request* req = new Request(args);					\
+    uv_work_t * req = new uv_work_t;					\
+    req->data = new Request(args);					\
 									\
-    eio_custom(EIO_Exec##Name, EIO_PRI_DEFAULT, EIO_After##Name, req);	\
-    ev_ref(EV_DEFAULT_UC);						\
+    uv_queue_work(uv_default_loop(), req, EIO_Exec##Name, EIO_After##Name);	\
+    uv_ref((uv_handle_t *)req);						\
 									\
     return args.This();							\
   }									\
 
 #define DEFINE_EXEC(Name, Request)					\
-  static int EIO_Exec##Name(eio_req *ereq) {				\
+  static void EIO_Exec##Name(uv_work_t *ereq) {				\
     Request* req = static_cast<Request *>(ereq->data);			\
-    return req->exec();							\
+    req->exec();							\
   }									\
 
 #define DEFINE_AFTER(Name, Request)					\
-  static int EIO_After##Name(eio_req *ereq) {				\
+  static void EIO_After##Name(uv_work_t *ereq, int status) {		\
     HandleScope scope;							\
     Request* req = static_cast<Request *>(ereq->data);			\
-    ev_unref(EV_DEFAULT_UC);						\
-    int result = req->after();						\
+    uv_unref((uv_handle_t *)ereq);					\
+    req->after();							\
     delete req;								\
-    return result;							\
+    delete ereq;							\
   }									\
 
 #define DEFINE_METHOD(Name, Request)					\
@@ -268,7 +270,7 @@ public:
     db = new PolyDB();
   }
 
-  ~PolyDBWrap() {
+  virtual ~PolyDBWrap() {
     delete db;
   }
 
@@ -306,7 +308,7 @@ public:
       wrap->Ref();
     }
 
-    ~Request() {
+    virtual ~Request() {
       wrap->Unref();
       next.Dispose();
     }
@@ -665,7 +667,7 @@ public:
       }
     }
 
-    ~CASRequest() {
+    virtual ~CASRequest() {
       if (ovalue) delete ovalue;
       if (nvalue) delete nvalue;
     }
@@ -718,7 +720,7 @@ public:
       key(args[0]->ToString())
     {}
 
-    ~GetRequest() {
+    virtual ~GetRequest() {
       if (vbuf) delete[] vbuf;
     }
 
@@ -1570,7 +1572,7 @@ public:
     cursor(cur)
   {}
 
-  ~CursorWrap() {
+  virtual ~CursorWrap() {
     delete cursor;
   }
 
@@ -1608,7 +1610,7 @@ public:
       wrap->Ref();
     }
 
-    ~Request() {
+    virtual ~Request() {
       wrap->Unref();
       next.Dispose();
     }

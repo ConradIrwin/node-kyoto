@@ -4,4 +4,8 @@
   "description": "Kyoto Cabinet bindings for Node.JS",
   "author": "Ben Weaver <ben@orangesoda.net>",
   "main": "./kyoto"
+
+  "devDependencies": {
+    "expresso" : "*"
+  }
 }

@@ -67,7 +67,6 @@ using namespace kyotocabinet;
     req->data = new Request(args);					\
 									\
     uv_queue_work(uv_default_loop(), req, EIO_Exec##Name, EIO_After##Name);	\
-    uv_ref((uv_handle_t *)req);						\
 									\
     return args.This();							\
   }									\
@@ -82,7 +81,6 @@ using namespace kyotocabinet;
   static void EIO_After##Name(uv_work_t *ereq, int status) {		\
     HandleScope scope;							\
     Request* req = static_cast<Request *>(ereq->data);			\
-    uv_unref((uv_handle_t *)ereq);					\
     req->after();							\
     delete req;								\
     delete ereq;							\
@@ -350,7 +348,7 @@ public:
   DEFINE_METHOD(Open, OpenRequest)
   class OpenRequest: public Request {
   private:
-    String::Utf8Value path;
+    std::string path;
     uint32_t mode;
 
   public:
@@ -363,13 +361,13 @@ public:
 
     OpenRequest(const Arguments& args):
       Request(args, 2),
-      path(args[0]->ToString()),
+      path(*String::Utf8Value(args[0])),
       mode(args[1]->Uint32Value())
     {}
 
     inline int exec() {
       PolyDB* db = wrap->db;
-      if (!db->open(*path, mode)) result = db->error().code();
+      if (!db->open(path, mode)) result = db->error().code();
       return 0;
     }
 

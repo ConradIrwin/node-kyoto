@@ -4,10 +4,9 @@ var Assert = require('assert'),
 
 module.exports = {
 
-  'open': function(done) {
-    Kyoto.open('+', function(err) {
+  'setUp': function(done) {
+    db = Kyoto.open('+', function(err) {
       if (err) throw err;
-      db = this;
       done();
     });
   },
@@ -483,7 +482,7 @@ module.exports = {
     });
   },
 
-  'close': function(done) {
+  'tearDown': function(done) {
     db.close(function(err) {
       if (err) throw err;
       done();

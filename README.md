@@ -55,6 +55,16 @@ To install the Kyoto bindings, use `npm`:
 
     npm install m4c0/node-kyoto
 
+You can also add it to `package.json`:
+
+    {
+        ...
+        "dependencies" : {
+            "kyoto" : "https://github.com/m4c0/node-kyoto/tarball/master",
+        }
+        ...
+    }
+
 [3]: http://fallabs.com/kyotocabinet/pkg/
 
 ## Documentation ##

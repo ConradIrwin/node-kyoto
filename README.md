@@ -44,7 +44,7 @@ Node.JS. For example:
 
 ## Installation ##
 
-Dependencies: Kyoto Cabinet `>= 1.2.57`, Node `>= 0.4.0`
+Dependencies: Kyoto Cabinet `>= 1.2.57`, Node `>= 0.10.0`
 
 If Kyoto Cabinet isn't already installed, try using your operating
 system's package manager. Otherwise, download and build
@@ -53,7 +53,7 @@ system's package manager. Otherwise, download and build
 
 To install the Kyoto bindings, use `npm`:
 
-    npm install kyoto
+    npm install m4c0/node-kyoto
 
 [3]: http://fallabs.com/kyotocabinet/pkg/
 
@@ -74,6 +74,7 @@ are forthcoming.
   calls and move some "delete"s around
 * Isolate pure calls from convenience ones. This allows us to consider
   Kyoto Cabinet's documentation as "oficial"
+* Test compatibility with older node versions
 
 ## Related ##
 

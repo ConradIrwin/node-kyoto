@@ -63,6 +63,18 @@ Please refer to `kyoto.js` for documentation of each method. Some
 `kyotocabinet` methods aren't implemented yet. More docs and examples
 are forthcoming.
 
+## TODO / Known bugs (Eduardo's additions) ##
+
+* Tests almost works when running `expresso` with `-s` (serial mode),
+  but "matchRegex" is failing - it's depending too much on the order
+  of executed tests (and this depends on the order of keys in a JS
+  object)
+* Check for Kyoto Cabinet API coverage (does 1.2.76 add new calls?)
+* Check for memory leaks - I had to remove some "uv_ref"/"uv_unref"
+  calls and move some "delete"s around
+* Isolate pure calls from convenience ones. This allows us to consider
+  Kyoto Cabinet's documentation as "oficial"
+
 ## Related ##
 
 An alternative to this package is [Kyoto Client][4], an implementation

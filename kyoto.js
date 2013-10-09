@@ -209,6 +209,24 @@ KyotoDB.prototype.get = function(key, next) {
   return this;
 };
 
+KyotoDB.prototype.getInt = function(key, next) {
+  var self = this;
+
+  if (this.db === null)
+    next.call(this, new Error('getInt: database is closed.'));
+  else
+    this.db.getInt(key, function(err, val) {
+      if (err && err.code == NOREC)
+        next.call(self, null, 0, key);
+      else if (err)
+        next.call(self, err);
+      else
+        next.call(self, null, val, key);
+    });
+
+  return this;
+};
+
 // Get a set of values from the database.
 //
 // Look up each key in the `keys` array; call `next` with a result

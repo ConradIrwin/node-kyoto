@@ -239,6 +239,7 @@ public:
     NODE_SET_PROTOTYPE_METHOD(ctor, "cas", CAS);
     NODE_SET_PROTOTYPE_METHOD(ctor, "remove", Remove);
     NODE_SET_PROTOTYPE_METHOD(ctor, "get", Get);
+    NODE_SET_PROTOTYPE_METHOD(ctor, "getInt", GetInt);
     NODE_SET_PROTOTYPE_METHOD(ctor, "getBulk", GetBulk);
     NODE_SET_PROTOTYPE_METHOD(ctor, "setBulk", SetBulk);
     NODE_SET_PROTOTYPE_METHOD(ctor, "removeBulk", RemoveBulk);
@@ -737,6 +738,55 @@ public:
       if (vbuf) argv[argc++] = String::New(vbuf, vsiz);
 
       callback(argc, argv);
+      return 0;
+    }
+  };
+
+  DEFINE_METHOD(GetInt, GetIntRequest)
+  class GetIntRequest: public Request {
+  protected:
+    String::Utf8Value key;
+    char *vbuf;
+    size_t vsiz;
+
+  public:
+    inline static bool validate(const Arguments& args) {
+      return (args.Length() >= 2
+              && args[0]->IsString()
+              && args[1]->IsFunction());
+    }
+
+    GetIntRequest(const Arguments& args):
+      Request(args, 1),
+      key(args[0]->ToString())
+    {}
+
+    virtual ~GetIntRequest() {
+      if (vbuf) delete[] vbuf;
+    }
+
+    inline int exec() {
+      PolyDB* db = wrap->db;
+      vbuf = db->get(*key, key.length(), &vsiz);
+      if (!vbuf) result = db->error().code();
+      return 0;
+    }
+
+    inline int after() {
+      Local<Value> argv[2];
+
+      argv[0] = error();
+      if (vbuf && vsiz == 8) {
+        // When you 'increment' a key in kyoto it creates a 64-bit
+        // network-order (big-endian) field.
+        // We just read the last four bytes (so we get a 32-bit counter)
+        // and then flip them with ntohl so it works on intel processors.
+        argv[1] = Number::New(ntohl(((uint32_t*)vbuf)[1]));
+      } else {
+        argv[1] = Number::New(99);
+      }
+
+      callback(2, argv);
       return 0;
     }
   };
